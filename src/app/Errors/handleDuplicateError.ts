@@ -4,14 +4,14 @@ import {
 } from "../Interface/error.interface";
 
 const handleDuplicateError = (err: any): TGenericErrorResponse => {
-  const match = err.message.match(/"([^"]*)"/);
+  const match = err.message.match(/email: "([^"]+)"/);
 
   const extractedMessage = match && match[1];
 
   const errorSources: TErrorSources = [
     {
-      path: "",
-      message: `${extractedMessage} is already exist!`,
+      path: '',
+      message: `${extractedMessage} is already exists`,
     },
   ];
 
@@ -19,7 +19,7 @@ const handleDuplicateError = (err: any): TGenericErrorResponse => {
 
   return {
     statusCode,
-    message: `Duplicate error! Already exist.`,
+    message: 'Duplicate error!',
     errorSources,
   };
 };

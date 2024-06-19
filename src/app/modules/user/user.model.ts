@@ -1,11 +1,9 @@
 import { Schema, model } from "mongoose";
-import { TUser } from "./user.interface";
-import bcrypt from "bcrypt";
+import { IUser } from "./user.interface";
+import bcrypt from 'bcrypt';
 import config from "../../config";
-import AppError from "../../Errors/AppError";
-import httpStatus from "http-status";
 
-const userSchema = new Schema<TUser>(
+const userSchema = new Schema<IUser>(
     {
         name: {
             type: String,
@@ -23,39 +21,37 @@ const userSchema = new Schema<TUser>(
         phone: {
             type: String,
             required: true,
-            unique: true,
         },
         role: {
             type: String,
-            enum: ['admin', 'user'],
-            required: true,
+            enum: ['user', 'admin'],
+            default: 'user',
         },
         address: {
             type: String,
             required: true,
-        }
+        },
     },
-    {
-        timestamps: true,
-    },
+    { timestamps: true },
 );
 
 
 userSchema.pre('save', async function (next) {
     const user = this;
-
     user.password = await bcrypt.hash(
         user.password,
-        Number(config.bcrypt_salt_rounds),
-    );
+        Number(config.bcrypt_salt_rounds)
+    )
     next();
 });
 
 
-userSchema.post('save', function (doc, next) {
-    doc.password = "";
-    next();
+userSchema.set('toJSON', {
+    transform: (doc, ret) => {
+        delete ret.password;
+        return ret;
+    },
 });
 
 
-export const User = model<TUser>('User', userSchema);
+export const User = model<IUser>('User', userSchema);

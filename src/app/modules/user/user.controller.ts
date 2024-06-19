@@ -5,11 +5,9 @@ import httpStatus from "http-status";
 import catchAsync from "../../utils/catchAsync";
 
 
-const createUser: RequestHandler = catchAsync(async (req, res, next) => {
-    console.log(req.body);
-    const {userInfo} = req.body;
+const createUser: RequestHandler = catchAsync(async (req, res) => {
+    const userInfo = req.body;
     const result = await UserService.createUserIntoDB(userInfo);
-    console.log(result);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

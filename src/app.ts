@@ -3,6 +3,7 @@ import cors from "cors";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 import notFoundRoute from "./app/middlewares/notFoundRoute";
 import router from "./app/routes";
+import catchAsync from "./app/utils/catchAsync";
 
 const app: Application = express();
 
