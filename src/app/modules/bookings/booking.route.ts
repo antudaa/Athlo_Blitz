@@ -11,4 +11,6 @@ router.post('/', auth(USER_ROLE.user), requestValidator(bookingValidations.creat
 
 router.get('/', auth(USER_ROLE.admin), BookingControllers.viewAllBookingsByAdmin);
 
+router.get('/user', auth(USER_ROLE.user), BookingControllers.viewBookingsByUser);
+
 export const BookingRoutes = router;

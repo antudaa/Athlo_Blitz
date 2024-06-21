@@ -33,9 +33,19 @@ const viewAllBookingsByAdmin = async () => {
 };
 
 const viewBookingsByUser = async (id: string) => {
-    const result = await Booking.find({
-        user: id
-    });
+    const result = await Booking.find({ user: id })
+        .populate('facility');
+
+    return result;
+};
+
+const cancelBookingByUser = async (id: string) => {
+    const result = await Booking.findByIdAndUpdate(
+        id,
+        { isBooked: 'canceled' },
+        { new: true },
+    )
+        .populate('facility');
     return result;
 }
 
@@ -43,4 +53,5 @@ export const BookingService = {
     createBookingIntoDB,
     viewAllBookingsByAdmin,
     viewBookingsByUser,
+    cancelBookingByUser
 }
