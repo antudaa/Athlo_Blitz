@@ -1,11 +1,17 @@
 import { Schema, model } from "mongoose";
-import { TBooking } from "./bookings.interface";
+import { BookingModel, IBooking } from "./bookings.interface";
+import { Facility } from "../facilities/facilities.model";
 
 
-const bookingSchema = new Schema<TBooking>(
+const bookingSchema = new Schema<IBooking, BookingModel>(
     {
+        facility: {
+            type: Schema.Types.ObjectId,
+            required: true,
+            ref: 'Facility',
+        },
         date: {
-            type: Date,
+            type: String,
             required: true,
         },
         startTime: {
@@ -18,13 +24,7 @@ const bookingSchema = new Schema<TBooking>(
         },
         user: {
             type: Schema.Types.ObjectId,
-            required: true,
             ref: 'User',
-        },
-        facility: {
-            type: Schema.Types.ObjectId,
-            required: true,
-            ref: 'Facility',
         },
         payableAmount: {
             type: Number,
@@ -37,11 +37,46 @@ const bookingSchema = new Schema<TBooking>(
             default: 'unconfirmed'
         }
     },
-    {
-        toJSON: {
-            virtuals: true,
-        }
-    }
+    { versionKey: false, }
 );
 
-export const Booking = model<TBooking>('Booking', bookingSchema);
+
+bookingSchema.pre('save', async function (next) {
+    const booking = this;
+    const facility = await Facility.findById(booking.facility);
+
+    const payableAmount = Booking.calculatePayableAmount(booking.startTime, booking.endTime, facility?.pricePerHour as number);
+
+    booking.payableAmount = Number(payableAmount);
+    booking.isBooked = 'confirmed';
+
+    next();
+});
+
+
+bookingSchema.statics.isBookingExists = async function (bookingInfo: Partial<IBooking>) {
+    const existingBooking = await Booking.findOne({
+        facility: bookingInfo.facility,
+        date: bookingInfo.date,
+        $or: [
+            {
+                startTime: { $lt: bookingInfo.endTime },
+                endTime: { $gt: bookingInfo.startTime }
+            }
+        ]
+    });
+
+    return !!existingBooking;
+}
+
+bookingSchema.statics.calculatePayableAmount = function (startTime: string, endTime: string, pricePerHour: number): number {
+    const start = new Date(`1970-01-01T${startTime}:00Z`);
+    const end = new Date(`1970-01-01T${endTime}:00Z`);
+    const durationInMilliseconds = end.getTime() - start.getTime();
+    const durationInHours = durationInMilliseconds / (1000 * 60 * 60);
+
+    const payableAmount = durationInHours * pricePerHour;
+    return payableAmount;
+};
+
+export const Booking = model<IBooking, BookingModel>('Booking', bookingSchema);

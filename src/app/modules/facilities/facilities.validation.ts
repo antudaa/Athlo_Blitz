@@ -3,10 +3,10 @@ import { z } from "zod";
 
 export const createFacilityValidationSchema = z.object({
     body: z.object({
-        name: z.string(),
-        description: z.string(),
-        pricePerHour: z.number(),
-        location: z.string(),
+        name: z.string().min(1, 'Name is required!'),
+        description: z.string().min(10, 'Description is required!'),
+        pricePerHour: z.number().min(1, 'Price is required!'),
+        location: z.string().min(3, 'Location is required!'),
     })
 });
 

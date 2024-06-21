@@ -1,11 +1,18 @@
-import { Types } from "mongoose";
+import { Model, Types } from "mongoose";
 
-export type TBooking = {
-    date: Date,
+export interface IBooking {
+    facility: Types.ObjectId,
+    date: string,
     startTime: string,
     endTime: string,
-    user: Types.ObjectId,
-    facility: Types.ObjectId,
-    payableAmount: number,
-    isBooked: string,
+    user?: Types.ObjectId,
+    payableAmount?: number,
+    isBooked?: 'confirmed' | 'unconfirmed' | 'canceled',
+};
+
+export interface BookingModel extends Model<IBooking> {
+
+    calculatePayableAmount(startTime: string, endTime: string, pricePerhour: number): Promise<IBooking>,
+
+    isBookingExists(bookingInfo: IBooking): Promise<boolean>;
 };

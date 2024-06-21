@@ -7,15 +7,17 @@ import { AuthService } from "./auth.service";
 
 const loginUser: RequestHandler = catchAsync(async (req, res) => {
     const result = await AuthService.loginUser(req.body);
+
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
         message: 'User is logged in successfully.',
-        data: result,
+        token: result.accessToken,
+        data: result.user,
     })
 });
 
 
 export const AuthControllers = {
     loginUser,
-}
+};

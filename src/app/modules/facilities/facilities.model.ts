@@ -1,8 +1,8 @@
-import { Schema, model } from "mongoose";
-import { TFacility } from "./facilities.interface";
+import { Schema, Types, model } from "mongoose";
+import { FacilityModel, IFacility } from "./facilities.interface";
 
 
-const facilitySchema = new Schema<TFacility>(
+const facilitySchema = new Schema<IFacility, FacilityModel>(
     {
         name: {
             type: String,
@@ -27,11 +27,18 @@ const facilitySchema = new Schema<TFacility>(
         }
     },
     {
-        toJSON: {
-            virtuals: true,
-        }
+        versionKey: false,
     }
 );
 
+facilitySchema.statics.isFacilityDeleted = async function (id: Types.ObjectId) {
+    const existingFacility = await Facility.findById(id);
 
-export const Facility = model<TFacility>('Facility', facilitySchema);
+    if (existingFacility?.isDeleted === true) {
+        return true;
+    }
+    return false;
+};
+
+
+export const Facility = model<IFacility, FacilityModel>('Facility', facilitySchema);

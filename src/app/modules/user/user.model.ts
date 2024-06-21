@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { IUser } from "./user.interface";
+import { IUser, UserModel } from "./user.interface";
 import bcrypt from 'bcrypt';
 import config from "../../config";
 
@@ -32,9 +32,10 @@ const userSchema = new Schema<IUser>(
             required: true,
         },
     },
-    { timestamps: true },
+    {
+        versionKey: false,
+    }
 );
-
 
 userSchema.pre('save', async function (next) {
     const user = this;
@@ -45,7 +46,6 @@ userSchema.pre('save', async function (next) {
     next();
 });
 
-
 userSchema.set('toJSON', {
     transform: (doc, ret) => {
         delete ret.password;
@@ -53,5 +53,17 @@ userSchema.set('toJSON', {
     },
 });
 
+userSchema.statics.isUserExistsByEmail = async function (email: string) {
+    return await User.findOne({ email });
+};
 
-export const User = model<IUser>('User', userSchema);
+userSchema.statics.isUserDeleted = async function (email: string) {
+    return await User.findOne({ email });
+};
+
+userSchema.statics.isPasswordMatched = async function (plainPassword, hashedPassword) {
+    return await bcrypt.compare(plainPassword, hashedPassword)
+};
+
+
+export const User = model<IUser, UserModel>('User', userSchema);

@@ -4,7 +4,7 @@ import {
 } from "../Interface/error.interface";
 
 const handleDuplicateError = (err: any): TGenericErrorResponse => {
-  const match = err.message.match(/email: "([^"]+)"/);
+  const match = err.message.match(/"([^"]+)"/);
 
   const extractedMessage = match && match[1];
 
