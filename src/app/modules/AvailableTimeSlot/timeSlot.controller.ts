@@ -3,17 +3,18 @@ import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { TimeSlotService } from "./timeSlot.service";
 
-const createTimeSlot = catchAsync(async (req, res) => {
-  const result = await TimeSlotService.createTimeSlotIntoDB(req.body);
+const getAvailableTimeSlot = catchAsync(async (req, res) => {
+  const { date } = req.query;
+  const result = await TimeSlotService.getAvailableTimeSlot(date as string);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Time slot created successfully.",
+    message: "Availability checked successfully",
     data: result,
   });
 });
 
 export const TimeSlotControllers = {
-  createTimeSlot,
+  getAvailableTimeSlot,
 };
