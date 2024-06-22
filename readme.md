@@ -15,7 +15,6 @@ Welcome to `Athlo Blitz`, the premier Sports Facility Booking Platform designed 
   - [Installation](#installation)
   - [Environment Variables](#environment-variables)
   - [Scripts](#scripts)
-  - [Key Features](#key-features)
   - [Contributing](#contributing)
 
 
@@ -32,8 +31,8 @@ Welcome to `Athlo Blitz`, the premier Sports Facility Booking Platform designed 
 1. **Clone the repository**:
 
    ```sh
-   git clone https://github.com/nirjhorsaha/nexus-reserve.git
-   cd nexus-reserve
+   git clone https://github.com/antudaa/Athlo_Blitz.git
+   cd athlo-blitz
    ```
 
 2. **Install dependencies**:
@@ -60,18 +59,6 @@ Start the development server:
 npm run start:dev
 ```
 
-
-## Key Features
-
-- **User and Admin Management**: Secure user authentication with **JWT** tokens. Admins can create, update, and delete rooms and slots.
-
-- **Room and Slot Management**: Create, update, and soft-delete meeting rooms. Define time slots per room.
-
-- **Booking System**: Users select available time slots for desired dates and rooms. Admins manage bookings and confirmations.
-
-- **Validation and Error Handling**: Robust validation ensures data integrity. Clear error messages guide users through the process.
-
-- **Security**: JWT tokens for authentication. Access control limits certain actions to admins.
 
 ## Contributing
 
