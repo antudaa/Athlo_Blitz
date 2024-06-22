@@ -5,19 +5,22 @@ import { Booking } from "./bookings.model";
 import { Facility } from "../facilities/facilities.model";
 import { Types } from "mongoose";
 
-
-const createBookingIntoDB = async (payload: IBooking,) => {
-
-    const isFacilityExists = await Facility.isFacilityDeleted(payload?.facility as Types.ObjectId);
+const createBookingIntoDB = async (payload: IBooking) => {
+    const isFacilityExists = await Facility.isFacilityDeleted(
+        payload?.facility as Types.ObjectId,
+    );
 
     if (isFacilityExists) {
-        throw new AppError(httpStatus.BAD_REQUEST, 'Facility not exists!');
+        throw new AppError(httpStatus.BAD_REQUEST, "Facility not exists!");
     }
 
     const bookingExists = await Booking.isBookingExists(payload);
 
     if (bookingExists) {
-        throw new AppError(httpStatus.BAD_REQUEST, 'This slot is not available right now!');
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            "This slot is not available right now!",
+        );
     }
 
     const result = await Booking.create(payload);
@@ -25,33 +28,29 @@ const createBookingIntoDB = async (payload: IBooking,) => {
 };
 
 const viewAllBookingsByAdmin = async () => {
-    const result = await Booking.find()
-        .populate('user')
-        .populate('facility')
-        ;
+    const result = await Booking.find().populate("user").populate("facility");
     return result;
 };
 
 const viewBookingsByUser = async (id: string) => {
-    const result = await Booking.find({ user: id })
-        .populate('facility');
+    const result = await Booking.find({ user: id }).populate("facility");
 
     return result;
 };
 
 const cancelBookingByUser = async (id: string) => {
+    console.log(id);
     const result = await Booking.findByIdAndUpdate(
         id,
-        { isBooked: 'canceled' },
+        { isBooked: "canceled" },
         { new: true },
-    )
-        .populate('facility');
+    ).populate("facility");
     return result;
-}
+};
 
 export const BookingService = {
     createBookingIntoDB,
     viewAllBookingsByAdmin,
     viewBookingsByUser,
-    cancelBookingByUser
-}
+    cancelBookingByUser,
+};

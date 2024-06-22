@@ -1,29 +1,34 @@
-import express from 'express';
-import auth from '../../middlewares/auth';
-import { FacilityControllers } from './facilities.controller';
-import { USER_ROLE } from '../user/user.constant';
-import requestValidator from '../../middlewares/validateRequest';
-import { facilityValidation } from './facilities.validation';
+import express from "express";
+import { FacilityControllers } from "./facilities.controller";
+import requestValidator from "../../middlewares/validateRequest";
+import { facilityValidation } from "./facilities.validation";
+import { authenticateUser, authorizeAdmin } from "../../middlewares/auth";
 
 const router = express.Router();
 
-router.post('/',
-    auth(USER_ROLE.admin),
-    requestValidator(facilityValidation.createFacilityValidationSchema),
-    FacilityControllers.createFacility
+router.post(
+  "/",
+  authenticateUser,
+  authorizeAdmin,
+  requestValidator(facilityValidation.createFacilityValidationSchema),
+  FacilityControllers.createFacility,
 );
 
-router.patch('/:id',
-    auth(USER_ROLE.admin),
-    requestValidator(facilityValidation.updateFacilityValidationSchema),
-    FacilityControllers.updateFacility
+router.patch(
+  "/:id",
+  authenticateUser,
+  authorizeAdmin,
+  requestValidator(facilityValidation.updateFacilityValidationSchema),
+  FacilityControllers.updateFacility,
 );
 
-router.delete('/:id',
-    auth(USER_ROLE.admin),
-    FacilityControllers.deleteFacility
+router.delete(
+  "/:id",
+  authenticateUser,
+  authorizeAdmin,
+  FacilityControllers.deleteFacility,
 );
 
-router.get('/', FacilityControllers.getAllFacility);
+router.get("/", FacilityControllers.getAllFacility);
 
 export const FacilityRoutes = router;

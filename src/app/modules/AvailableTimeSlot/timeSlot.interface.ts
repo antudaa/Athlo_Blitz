@@ -1,4 +1,4 @@
 export type TTimeSlot = {
-    startTime: string,
-    endTime: string,
-}
+  startTime: string;
+  endTime: string;
+};

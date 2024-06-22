@@ -1,16 +1,42 @@
-import express from 'express';
-import auth from '../../middlewares/auth';
-import { USER_ROLE } from '../user/user.constant';
-import requestValidator from '../../middlewares/validateRequest';
-import { bookingValidations } from './bookings.validation';
-import { BookingControllers } from './booking.controller';
+import express from "express";
+import requestValidator from "../../middlewares/validateRequest";
+import { bookingValidations } from "./bookings.validation";
+import { BookingControllers } from "./booking.controller";
+import {
+  authenticateUser,
+  authorizeAdmin,
+  authorizeUser,
+} from "../../middlewares/auth";
 
 const router = express.Router();
 
-router.post('/', auth(USER_ROLE.user), requestValidator(bookingValidations.createBookingValidationSchema), BookingControllers.createBooking);
+router.post(
+  "/",
+  authenticateUser,
+  authorizeUser,
+  requestValidator(bookingValidations.createBookingValidationSchema),
+  BookingControllers.createBooking,
+);
 
-router.get('/', auth(USER_ROLE.admin), BookingControllers.viewAllBookingsByAdmin);
+router.get(
+  "/",
+  authenticateUser,
+  authorizeAdmin,
+  BookingControllers.viewAllBookingsByAdmin,
+);
 
-router.get('/user', auth(USER_ROLE.user), BookingControllers.viewBookingsByUser);
+router.get(
+  "/user",
+  authenticateUser,
+  authorizeUser,
+  BookingControllers.viewBookingsByUser,
+);
+
+router.delete(
+    "/:id",
+    authenticateUser,
+    authorizeUser,
+    BookingControllers.cancleBookingByUser,
+  );
 
 export const BookingRoutes = router;

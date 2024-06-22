@@ -1,33 +1,92 @@
 import { NextFunction, Response, Request } from "express";
-import catchAsync from "../utils/catchAsync";
-import AppError from "../Errors/AppError";
 import httpStatus from "http-status";
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt, { JwtPayload } from "jsonwebtoken";
 import config from "../config";
-import { TUserRole } from "../modules/user/user.interface";
+import sendResponse from "../utils/sendResponse";
 
-const auth = (...requiredRoles: TUserRole[]) => {
-    return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-        const token = req.headers.authorization;
+const authenticateUser = (req: Request, res: Response, next: NextFunction) => {
+  const token = req.header("Authorization")?.replace("Bearer ", "");
 
-        if (!token) {
-            throw new AppError(httpStatus.UNAUTHORIZED, `Your are not Authorized!`)
-        }
-
-        jwt.verify(token, config.jwt_access_secret_token as string, function (err, decoded) {
-            if (err) {
-                throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized!');
-            }
-            const role = (decoded as JwtPayload).userRole;
-
-            if (requiredRoles && !requiredRoles.includes(role)) {
-                throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized!')
-            }
-
-            req.user = decoded as JwtPayload;
-            next();
-        });
+  // checking if the token is missing
+  if (!token) {
+    return sendResponse(res, {
+      success: false,
+      statusCode: httpStatus.UNAUTHORIZED,
+      message: "Authorization token missing",
     });
+  }
+
+  try {
+    // checking if the given token is valid
+    const decoded = jwt.verify(
+      token,
+      config.jwt_access_secret_token as string,
+    ) as JwtPayload;
+
+    // Attach user id and role to request object
+    (req as any).userId = decoded.sub;
+    (req as any).userRole = decoded.role;
+    next();
+  } catch (error) {
+    sendResponse(res, {
+      success: false,
+      statusCode: httpStatus.FORBIDDEN,
+      message: "Invalid token!",
+    });
+  }
 };
 
-export default auth;
+// Middleware for authorize Admin
+const authorizeAdmin = (req: Request, res: Response, next: NextFunction) => {
+  const token = req.header("Authorization")?.replace("Bearer ", "");
+  const decoded = jwt.verify(
+    token as string,
+    config.jwt_access_secret_token as string,
+  ) as JwtPayload;
+
+  if (decoded?.userRole !== "admin") {
+    return sendResponse(res, {
+      success: false,
+      statusCode: httpStatus.UNAUTHORIZED,
+      message: "You have no access to this route",
+    });
+  } else {
+    next();
+  }
+};
+
+// Middleware for authorize Users
+const authorizeUser = (req: Request, res: Response, next: NextFunction) => {
+  const token = req.header("Authorization")?.replace("Bearer ", "");
+  const decoded = jwt.verify(
+    token as string,
+    config.jwt_access_secret_token as string,
+  ) as JwtPayload;
+
+  if (decoded?.userRole !== "user") {
+    return sendResponse(res, {
+      success: false,
+      statusCode: httpStatus.UNAUTHORIZED,
+      message: "You have no access to this route",
+    });
+  } else {
+    next();
+  }
+};
+
+// Function to verify jwt token
+const getUserIdFromToken = (req: Request) => {
+  const token = req.header("Authorization")?.replace("Bearer ", "");
+  const decoded = jwt.verify(
+    token as string,
+    config.jwt_access_secret_token as string,
+  ) as JwtPayload;
+  return decoded.userId;
+};
+
+export {
+  authenticateUser,
+  authorizeAdmin,
+  authorizeUser,
+  getUserIdFromToken,
+};
