@@ -13,7 +13,7 @@ app.use(cors());
 app.use(`/api`, router);
 
 app.get("/", (req: Request, res: Response) => {
-  res.send(`Wellcome to Assignment_3😎`);
+  res.send(`Wellcome to Athlo_BitZ 😎`);
 });
 
 // Global Error Handler.

@@ -10,7 +10,7 @@ const loginUser: RequestHandler = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "User is logged in successfully.",
+    message: "User logged in successfully",
     token: result.accessToken,
     data: result.user,
   });
