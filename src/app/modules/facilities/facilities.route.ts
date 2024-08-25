@@ -2,7 +2,8 @@ import express from "express";
 import { FacilityControllers } from "./facilities.controller";
 import requestValidator from "../../middlewares/validateRequest";
 import { facilityValidation } from "./facilities.validation";
-import { authenticateUser, authorizeAdmin } from "../../middlewares/auth";
+import { auth, authenticateUser, authorizeAdmin } from "../../middlewares/auth";
+import { USER_ROLE } from "../user/user.constant";
 
 const router = express.Router();
 
@@ -29,6 +30,11 @@ router.delete(
   FacilityControllers.deleteFacility,
 );
 
-router.get("/", FacilityControllers.getAllFacility);
+router.get("/",
+  auth(
+    USER_ROLE.admin,
+    USER_ROLE.user
+  ),
+  FacilityControllers.getAllFacility);
 
 export const FacilityRoutes = router;

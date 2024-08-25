@@ -3,12 +3,14 @@ import cors from "cors";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 import notFoundRoute from "./app/middlewares/notFoundRoute";
 import router from "./app/routes";
-import catchAsync from "./app/utils/catchAsync";
+import cookieParser from "cookie-parser";
+
 
 const app: Application = express();
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: ['http://localhost:5173'] }));
+app.use(cookieParser());
 
 app.use(`/api`, router);
 

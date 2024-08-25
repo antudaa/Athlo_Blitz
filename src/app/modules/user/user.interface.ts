@@ -6,15 +6,25 @@ export interface IUser {
   name: string;
   email: string;
   password: string;
+  passwordChangedAt?: Date;
   phone: string;
   role: "user" | "admin";
+  status: "active" | "blocked";
   address: string;
+  isDeleted: boolean;
 }
 
 export interface UserModel extends Model<IUser> {
+
+  hashPassword(password: string): Promise<string>;
+
+  isUserBlocked(status: string): Promise<string>;
+
   isUserExistsByEmail(email: string): Promise<IUser>;
 
   isUserDeleted(email: string): Promise<IUser>;
+
+  isJWTIssuedBeforePasswordChanged(passwordChangeTimeStamp: Date, jwtIssuedTimeStamp: number): Promise<boolean>;
 
   isPasswordMatched(
     plainPassword: string,

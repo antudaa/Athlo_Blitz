@@ -59,6 +59,7 @@ const deleteFacility: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const getAllFacility: RequestHandler = catchAsync(async (req, res) => {
+  console.log(req.cookies);
   const result = await FacilityService.getAllFacilityFromDB();
 
   sendResponse(res, {
