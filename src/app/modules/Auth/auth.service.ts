@@ -13,7 +13,7 @@ const loginUser = async (payload: TLoginUser) => {
     throw new AppError(httpStatus.NOT_FOUND, "User not found!");
   }
 
-  if (!(await User.isUserDeleted(payload?.email))) {
+  if (!(await User.isUserExistsByEmail(payload?.email))) {
     throw new AppError(httpStatus.FORBIDDEN, "User is deleted!");
   }
 
@@ -24,7 +24,7 @@ const loginUser = async (payload: TLoginUser) => {
   const jwtPayload = {
     userEmail: user.email,
     userRole: user.role,
-    userId: user._id?.toString(),
+    userId: user._id as string,
   };
 
   const accessToken = createToken(
@@ -42,7 +42,6 @@ const loginUser = async (payload: TLoginUser) => {
   return {
     accessToken,
     refreshToken,
-    user,
   };
 };
 
@@ -67,10 +66,15 @@ const changePassword = async (userInfo: JwtPayload, payload: TPasswordChange) =>
   if (status === 'blocked') {
     throw new AppError(httpStatus.FORBIDDEN, 'User is blocked!');
   }
+  console.log('User not blocked')
+  console.log(oldPassword, user?.password);
 
   if (!(await User.isPasswordMatched(oldPassword, user?.password))) {
+    console.log('Password not matched')
     throw new AppError(httpStatus.FORBIDDEN, 'Password do not matched!')
   }
+
+  console.log('Password Matched');
 
   const hashedPassword = await User.hashPassword(newPassword);
 
@@ -129,7 +133,7 @@ const refreshToken = async (token: string) => {
   const jwtPayload = {
     userEmail: user.email,
     userRole: user.role,
-    userId: user._id?.toString(),
+    userId: user._id as string,
   };
 
   const accessToken = createToken(
@@ -141,7 +145,7 @@ const refreshToken = async (token: string) => {
   return {
     accessToken,
   };
-}
+};
 
 export const AuthServices = {
   loginUser,

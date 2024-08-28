@@ -4,7 +4,7 @@ const loginValidationSchema = z.object({
   body: z.object({
     email: z.string({
       required_error: "Id is required!",
-    }),
+    }).email("Invalid email address!"),
     password: z.string({ required_error: "Password is required!" }),
   }),
 });

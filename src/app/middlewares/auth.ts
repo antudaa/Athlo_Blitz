@@ -27,8 +27,6 @@ const authenticateUser = (req: Request, res: Response, next: NextFunction) => {
       config.jwt_access_secret_token as string,
     ) as JwtPayload;
 
-    console.log(decoded);
-
     // Attach user id and role to request object
     (req as any).userId = decoded.sub;
     (req as any).userRole = decoded.role;
@@ -139,7 +137,7 @@ const auth = (...requiredRoles: TUserRole[]) => {
     if (requiredRoles && !requiredRoles.includes(userRole)) {
       throw new AppError(
         httpStatus.UNAUTHORIZED,
-        'You are not authorized  hi!',
+        'You are not authorized!',
       );
     }
 

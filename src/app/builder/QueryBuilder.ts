@@ -13,14 +13,15 @@ class QueryBuilder<T> {
     const searchTerm = this?.query?.searchTerm;
 
     if (searchTerm) {
-      this.modelQuery = this.modelQuery.find({
+      const searchCondition = {
         $or: searchableFields.map(
           (field) =>
             ({
               [field]: { $regex: searchTerm, $options: "i" },
             }) as FilterQuery<T>,
         ),
-      });
+      };
+      this.modelQuery = this.modelQuery.find(searchCondition);
     }
     return this;
   }
@@ -32,16 +33,23 @@ class QueryBuilder<T> {
 
     excludeFields.forEach((element) => delete queryObject[element]);
 
-    this.modelQuery = this.modelQuery.find(queryObject as FilterQuery<T>);
+    if (queryObject.category === "") {
+      return this;
+    }
 
+    this.modelQuery = this.modelQuery.find(queryObject as FilterQuery<T>);
     return this;
   }
 
   sort() {
-    const sort =
-      (this?.query?.sort as string)?.split(",")?.join(" ") || "-createdAt";
+    let sortField =
+      (this?.query?.sort as string)?.split(",")?.join(" ") || "price";
 
-    this.modelQuery = this.modelQuery.sort(sort as string);
+    if (sortField.includes("rating")) {
+      sortField = sortField.replace("rating", "-rating");
+    }
+
+    this.modelQuery = this.modelQuery.sort(sortField);
 
     return this;
   }
@@ -63,6 +71,14 @@ class QueryBuilder<T> {
     this.modelQuery = this.modelQuery.select(fields);
 
     return this;
+  }
+
+  async getTotalCount() {
+    const countQuery = this.modelQuery.model.countDocuments(
+      this.modelQuery.getQuery() as FilterQuery<T>,
+    );
+    const count = await countQuery;
+    return count;
   }
 }
 

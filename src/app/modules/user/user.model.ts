@@ -1,15 +1,11 @@
 import { Schema, model } from "mongoose";
-import { IUser, UserModel } from "./user.interface";
+import { TUser, UserModel } from "./user.interface";
 import bcrypt from "bcrypt";
 import config from "../../config";
 import { UserStatus } from "./user.constant";
 
-const userSchema = new Schema<IUser>(
+const userSchema = new Schema<TUser>(
   {
-    name: {
-      type: String,
-      required: true,
-    },
     email: {
       type: String,
       required: true,
@@ -23,10 +19,6 @@ const userSchema = new Schema<IUser>(
       type: Date,
       default: new Date(),
     },
-    phone: {
-      type: String,
-      required: true,
-    },
     role: {
       type: String,
       enum: ["user", "admin"],
@@ -37,19 +29,16 @@ const userSchema = new Schema<IUser>(
       enum: UserStatus,
       default: 'active',
     },
-    address: {
-      type: String,
-      required: true,
-    },
     isDeleted: {
       type: Boolean,
       default: false,
-    }
+    },
   },
   {
     versionKey: false,
   },
 );
+
 
 userSchema.pre("save", async function (next) {
   const user = this;
@@ -80,8 +69,34 @@ userSchema.statics.isUserExistsByEmail = async function (email: string) {
   return await User.findOne({ email });
 };
 
-userSchema.statics.isUserDeleted = async function (email: string) {
-  return await User.findOne({ email });
+userSchema.statics.isUserExistsByID = async function (id: string) {
+  return await User.findById(id); 
+};
+
+userSchema.statics.blockUserByID = async function (id: Schema.Types.ObjectId) {
+  return await User.findByIdAndUpdate(
+    id,
+    { status: 'blocked' },
+    { new: true },
+  );
+};
+
+userSchema.statics.isUserBlocked = async function (id: Schema.Types.ObjectId) {
+  const user = await this.findById(id);
+  return user && user.status === 'blocked';
+}
+
+userSchema.statics.deleteUserByID = async function (id: Schema.Types.ObjectId) {
+  return await User.findByIdAndUpdate(
+    id,
+    { isDeleted: true },
+    { new: true },
+  );
+};
+
+userSchema.statics.isUserDeleted = async function (id: Schema.Types.ObjectId) {
+  const user = await this.findById(id);
+  return user && user.isDeleted === true;
 };
 
 userSchema.statics.isJWTIssuedBeforePasswordChanged = async function (
@@ -99,4 +114,4 @@ userSchema.statics.isPasswordMatched = async function (
   return await bcrypt.compare(plainPassword, hashedPassword);
 };
 
-export const User = model<IUser, UserModel>("User", userSchema);
+export const User = model<TUser, UserModel>("User", userSchema);

@@ -5,9 +5,9 @@ import { UserControllers } from "./user.controller";
 const router = express.Router();
 
 router.get('/',
-    authenticateUser,
-    authorizeAdmin,
-    UserControllers.getAllUsers
+  authenticateUser,
+  authorizeAdmin,
+  UserControllers.getAllUsers
 );
 
 export const UserRoutes = router;
