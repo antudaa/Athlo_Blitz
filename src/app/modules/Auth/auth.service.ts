@@ -42,6 +42,7 @@ const loginUser = async (payload: TLoginUser) => {
   return {
     accessToken,
     refreshToken,
+    user,
   };
 };
 

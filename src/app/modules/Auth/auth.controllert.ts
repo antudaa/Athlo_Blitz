@@ -21,8 +21,9 @@ const loginUser: RequestHandler = catchAsync(async (req, res) => {
     success: true,
     message: "User logged in successfully",
     data: {
+      refreshToken,
       accessToken,
-      user
+      user,
     },
   });
 });
@@ -33,7 +34,7 @@ const changePassword: RequestHandler = catchAsync(async (req, res) => {
     token as string,
     config.jwt_access_secret_token as string,
   ) as JwtPayload;
-  const {body} = req.body;
+  const { body } = req.body;
 
   const result = await AuthServices.changePassword(decoded, body);
 
