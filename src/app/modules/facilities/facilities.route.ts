@@ -37,4 +37,11 @@ router.get("/",
   ),
   FacilityControllers.getAllFacility);
 
+router.get("/:id",
+  auth(
+    USER_ROLE.admin,
+    USER_ROLE.user
+  ),
+  FacilityControllers.getFaciltyByID);
+
 export const FacilityRoutes = router;

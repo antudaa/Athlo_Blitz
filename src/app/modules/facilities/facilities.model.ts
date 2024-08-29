@@ -1,8 +1,13 @@
-import { Schema, Types, model } from "mongoose";
-import { FacilityModel, IFacility } from "./facilities.interface";
+import { Schema, model } from "mongoose";
+import { FacilityModel, TFacility } from "./facilities.interface";
 
-const facilitySchema = new Schema<IFacility, FacilityModel>(
+const facilitySchema = new Schema<TFacility, FacilityModel>(
   {
+    user: {
+      type: Schema.Types.ObjectId,
+      reqired: true,
+      ref: "User",
+    },
     name: {
       type: String,
       required: true,
@@ -18,7 +23,7 @@ const facilitySchema = new Schema<IFacility, FacilityModel>(
     },
     location: {
       type: String,
-      required: true,
+      required: [true, 'Location is required!'],
     },
     isDeleted: {
       type: Boolean,
@@ -30,16 +35,13 @@ const facilitySchema = new Schema<IFacility, FacilityModel>(
   },
 );
 
-facilitySchema.statics.isFacilityDeleted = async function (id: Types.ObjectId) {
+facilitySchema.statics.isFacilityDeleted = async function (id: string) {
   const existingFacility = await Facility.findById(id);
 
-  if (existingFacility?.isDeleted === true) {
-    return true;
-  }
-  return false;
+  return existingFacility?.isDeleted === true;
 };
 
-export const Facility = model<IFacility, FacilityModel>(
+export const Facility = model<TFacility, FacilityModel>(
   "Facility",
   facilitySchema,
 );

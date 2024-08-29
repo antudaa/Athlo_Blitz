@@ -9,7 +9,7 @@ const router = express.Router();
 router.post(
     "/",
     authenticateUser,
-    authorizeUser,
+    // authorizeUser,
     requestValidator(UserReviewValidation.userReviewSchema),
     UserReviewControllers.createUserReview,
 );
@@ -31,7 +31,7 @@ router.get(
 router.patch(
     "/:id",
     authenticateUser,
-    authorizeAdmin,
+    // authorizeAdmin,
     UserReviewControllers.updateReview,
 );
 

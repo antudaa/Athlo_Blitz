@@ -4,14 +4,15 @@ import { FacilityService } from "./facilities.service";
 import sendResponse from "../../utils/sendResponse";
 import httpStatus from "http-status";
 import AppError from "../../Errors/AppError";
+import mongoose, { ObjectId, Types } from "mongoose";
 
 const createFacility: RequestHandler = catchAsync(async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
-  const facilityInfo = req.body;
+  const { body } = req.body;
   if (!token) {
     throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized!");
   }
-  const result = await FacilityService.createFacilityIntoDB(facilityInfo);
+  const result = await FacilityService.createFacilityIntoDB(body);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -25,12 +26,12 @@ const updateFacility: RequestHandler = catchAsync(async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
 
   const { id } = req.params;
-  const facilityInfo = req.body;
+  const { body } = req.body;
 
   if (!token) {
     throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized!");
   }
-  const result = await FacilityService.updateFacility(id, facilityInfo);
+  const result = await FacilityService.updateFacility(id, body);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -59,8 +60,7 @@ const deleteFacility: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const getAllFacility: RequestHandler = catchAsync(async (req, res) => {
-  console.log(req.cookies);
-  const result = await FacilityService.getAllFacilityFromDB();
+  const result = await FacilityService.getAllFacilityFromDB(req.query);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -70,9 +70,23 @@ const getAllFacility: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getFaciltyByID: RequestHandler = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const objectId = new mongoose.Types.ObjectId(id);
+  const result = await FacilityService.getFacilityByID(objectId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Facilities retrieved successfully",
+    data: result,
+  });
+})
+
 export const FacilityControllers = {
   createFacility,
   updateFacility,
   deleteFacility,
   getAllFacility,
+  getFaciltyByID,
 };

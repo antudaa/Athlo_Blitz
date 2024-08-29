@@ -13,8 +13,9 @@ const createBooking: RequestHandler = catchAsync(async (req, res) => {
     throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized!");
   }
   const userId = getUserIdFromToken(req);
+  const { body } = req.body;
 
-  const bookingInfo = { ...req.body, user: userId };
+  const bookingInfo = { ...body, user: userId };
   const result = await BookingService.createBookingIntoDB(bookingInfo);
 
   sendResponse(res, {

@@ -6,6 +6,7 @@ import { TimeSoltRoutes } from "../modules/AvailableTimeSlot/timeSlot.route";
 import { BookingRoutes } from "../modules/bookings/booking.route";
 import { AdminRoutes } from "../modules/Admin/admin.route";
 import { ClientRoutes } from "../modules/Client/client.route";
+import { UserReviewRoutes } from "../modules/Review/review.route";
 
 const router = Router();
 
@@ -37,6 +38,10 @@ const moduleRoutes = [
   {
     path: `/bookings`,
     route: BookingRoutes,
+  },
+  {
+    path: `/facility-review`,
+    route: UserReviewRoutes,
   },
 ];
 

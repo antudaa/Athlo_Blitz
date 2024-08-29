@@ -1,9 +1,17 @@
 import { Schema, model } from "mongoose";
 import { ITimeSlot, TimeSlotModel } from "./timeSlot.interface";
-import { Booking } from "../bookings/bookings.model";
 import { IBooking } from "../bookings/bookings.interface";
 
 const timeSlotSchema = new Schema<ITimeSlot, TimeSlotModel>({
+  facility: {
+    type: Schema.Types.ObjectId,
+    required: [true, "Start time is required!"],
+    ref: "Facility"
+  },
+  date: {
+    type: Date,
+    required: [true, "End time is required!"],
+  },
   startTime: {
     type: String,
     required: [true, "Start time is required!"],
@@ -16,38 +24,51 @@ const timeSlotSchema = new Schema<ITimeSlot, TimeSlotModel>({
   },
 });
 
-timeSlotSchema.statics.isTimeSlotAvailable = async function (bookedTimeSlots: IBooking[]) {
+timeSlotSchema.statics.isTimeSlotAvailable = async function (
+  bookedTimeSlots: IBooking[]
+): Promise<IBooking[]> {
+  const availableSlots: IBooking[] = [];
 
-  const allTimeSlots: ITimeSlot[] = [];
-  for (let hour = 0; hour < 24; hour += 2) {
-    const startTime = `${hour.toString().padStart(2, '0')}:00`;
-    const endTime = `${(hour + 2).toString().padStart(2, '0')}:00`;
-    allTimeSlots.push({ startTime, endTime });
+  // Define the start and end of the day
+  const dayStart = new Date("1970-01-01T00:00:00Z");
+  const dayEnd = new Date("1970-01-01T23:59:59Z");
+
+  // Convert booked time slots to Date objects for proper comparison
+  const formattedBookedSlots = bookedTimeSlots.map((slot) => ({
+    start: new Date(`1970-01-01T${slot.startTime}:00Z`),
+    end: new Date(`1970-01-01T${slot.endTime}:00Z`),
+  }));
+
+  // Sort booked slots by start time
+  formattedBookedSlots.sort((a, b) => a.start.getTime() - b.start.getTime());
+
+  let previousEnd = dayStart;
+
+  for (const booked of formattedBookedSlots) {
+    if (previousEnd < booked.start) {
+      availableSlots.push({
+        facility: bookedTimeSlots[0].facility,
+        date: bookedTimeSlots[0].date,
+        startTime: previousEnd.toISOString().substring(11, 16),
+        endTime: booked.start.toISOString().substring(11, 16),
+      });
+    }
+
+    // Update previousEnd to the end of the current booked slot
+    previousEnd = booked.end;
   }
 
-  const availableTimeSlots = allTimeSlots.filter(slot => {
-    return !bookedTimeSlots.some(booking => {
-      const bookingStart = new Date(`1970-01-01T${booking.startTime}:00Z`).getTime();
-      const bookingEnd = new Date(`1970-01-01T${booking.endTime}:00Z`).getTime();
-      const slotStart = new Date(`1970-01-01T${slot.startTime}:00Z`).getTime();
-      const slotEnd = new Date(`1970-01-01T${slot.endTime}:00Z`).getTime();
-      return (
-        (slotStart >= bookingStart && slotStart < bookingEnd) ||
-        (slotEnd > bookingStart && slotEnd <= bookingEnd) ||
-        (slotStart <= bookingStart && slotEnd >= bookingEnd)
-      );
+  // Check for availability from the end of the last booked slot to the end of the day
+  if (previousEnd < dayEnd) {
+    availableSlots.push({
+      facility: bookedTimeSlots[0].facility,
+      date: bookedTimeSlots[0].date,
+      startTime: previousEnd.toISOString().substring(11, 16),
+      endTime: dayEnd.toISOString().substring(11, 16),
     });
-  });
+  }
 
-  return availableTimeSlots;
-}
-
-timeSlotSchema.statics.getBookedTimeSlotsByDate = async function (date?: string): Promise<IBooking[]> {
-  const queryDate = date || new Date().toISOString().split('T')[0];
-  const bookedTimeSlots = await Booking.find({
-    date: queryDate
-  });
-  return bookedTimeSlots;
+  return availableSlots;
 };
 
 export const TimeSlot = model<ITimeSlot, TimeSlotModel>("slotTime", timeSlotSchema);

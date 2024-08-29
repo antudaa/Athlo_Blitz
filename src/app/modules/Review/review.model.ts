@@ -6,12 +6,12 @@ const userReviewSchema = new Schema<TUserReview>(
         user: {
             type: Schema.Types.ObjectId,
             ref: "User",
-            required: true
+            required: [true, 'User id is required!'],
         },
         facility: {
             type: Schema.Types.ObjectId,
             ref: "Facility",
-            required: true
+            required: [true, 'Facility id is required!'],
         },
         rating: {
             type: Number,

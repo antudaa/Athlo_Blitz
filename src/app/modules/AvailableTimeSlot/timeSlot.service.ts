@@ -1,12 +1,19 @@
-import { IBooking } from "../bookings/bookings.interface";
+import QueryBuilder from "../../builder/QueryBuilder";
+import { Booking } from "../bookings/bookings.model";
 import { TimeSlot } from "./timeSlot.model";
 
-const getAvailableTimeSlot = async (date?: string) => {
+const getAvailableTimeSlot = async (query: Record<string, unknown>) => {
+  const checkAvailabilityQuery = new QueryBuilder(Booking.find(), query)
+    .filter()
 
-  const bookedTimeSlots: IBooking[] = await TimeSlot.getBookedTimeSlotsByDate(date);
-  const availableTimeSlots = await TimeSlot.isTimeSlotAvailable(bookedTimeSlots);
+  const [bookedslots] = await Promise.all([
+    checkAvailabilityQuery.modelQuery.populate("user"),
+    checkAvailabilityQuery.getTotalCount(),
+  ]);
 
-  return availableTimeSlots;
+  const availableSlots = await TimeSlot.isTimeSlotAvailable(bookedslots);
+
+  return availableSlots;
 };
 
 export const TimeSlotService = {

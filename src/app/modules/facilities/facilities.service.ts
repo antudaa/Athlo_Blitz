@@ -1,12 +1,18 @@
-import { IFacility } from "./facilities.interface";
+import httpStatus from "http-status";
+import AppError from "../../Errors/AppError";
+import { TFacility } from "./facilities.interface";
 import { Facility } from "./facilities.model";
+import QueryBuilder from "../../builder/QueryBuilder";
+import { facilitySearchableFields } from "./facility.Constant";
+import { Types } from "mongoose";
 
-const createFacilityIntoDB = async (payload: IFacility) => {
+const createFacilityIntoDB = async (payload: TFacility) => {
   const newFacility = await Facility.create(payload);
   return newFacility;
 };
 
-const updateFacility = async (id: string, payload: Partial<IFacility>) => {
+const updateFacility = async (id: string, payload: Partial<TFacility>) => {
+  console.log(payload)
   const result = await Facility.findByIdAndUpdate(id, payload, { new: true });
   return result;
 };
@@ -20,8 +26,31 @@ const deleteFacilityFromDB = async (id: string) => {
   return result;
 };
 
-const getAllFacilityFromDB = async () => {
-  const result = await Facility.find();
+const getAllFacilityFromDB = async (query: Record<string, unknown>) => {
+  const facilityQuery = new QueryBuilder(Facility.find(), query)
+    .search(facilitySearchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const [facilities, totalCount] = await Promise.all([
+    facilityQuery.modelQuery.populate("user"),
+    facilityQuery.getTotalCount(),
+  ]);
+
+  const result = { total: totalCount, data: facilities };
+  return result;
+};
+
+const getFacilityByID = async (id: Types.ObjectId) => {
+
+  if (await Facility.isFacilityDeleted(id)) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Facility is deleted!');
+  }
+  const result = Facility.findById(id)
+    .populate('user');
+
   return result;
 };
 
@@ -30,4 +59,5 @@ export const FacilityService = {
   updateFacility,
   deleteFacilityFromDB,
   getAllFacilityFromDB,
+  getFacilityByID,
 };

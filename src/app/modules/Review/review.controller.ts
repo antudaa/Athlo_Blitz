@@ -45,8 +45,9 @@ const getReviewById: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const updateReview: RequestHandler = catchAsync(async (req, res) => {
-    const { payload } = req.body;
+    const  payload  = req.body;
     const { id } = req.params;
+    console.log(payload, id);
     const result = await UserReviewServices.updateReview(id, payload);
 
     sendResponse(res, {

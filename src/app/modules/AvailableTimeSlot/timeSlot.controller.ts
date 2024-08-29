@@ -4,8 +4,7 @@ import sendResponse from "../../utils/sendResponse";
 import { TimeSlotService } from "./timeSlot.service";
 
 const getAvailableTimeSlot = catchAsync(async (req, res) => {
-  const { date } = req.query;
-  const result = await TimeSlotService.getAvailableTimeSlot(date as string);
+  const result = await TimeSlotService.getAvailableTimeSlot(req.query);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
