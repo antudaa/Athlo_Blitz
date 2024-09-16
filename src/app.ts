@@ -9,8 +9,28 @@ import cookieParser from "cookie-parser";
 const app: Application = express();
 
 app.use(express.json());
-app.use(cors({ origin: ['http://localhost:5173'] }));
+
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://api.imgbb.com/1/upload'
+  ],
+  credentials: true,
+  methods: [
+    'GET',
+    'POST',
+    'PUT',
+    'DELETE',
+    'OPTIONS',
+    'PATCH',
+    'HEAD',
+    'TRACE'
+  ],
+}));
 app.use(cookieParser());
+
+app.set('view engine', 'ejs');
+app.set('views', './views/Confirmation.html');
 
 app.use(`/api`, router);
 

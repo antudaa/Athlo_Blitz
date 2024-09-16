@@ -1,34 +1,5 @@
 import { Schema, model } from "mongoose";
-import { AdminModel, TAddressAdmin, TAdmin } from "./admin.interface";
-
-// Define the address schema
-const addressSchema = new Schema<TAddressAdmin>(
-  {
-    streetAddress: {
-      type: String,
-      required: [true, "Street address is required!"],
-    },
-    city: {
-      type: String,
-      required: [true, "City is required!"],
-    },
-    state: {
-      type: String,
-      required: [true, "State is required!"],
-    },
-    postalCode: {
-      type: String,
-      required: [true, "Postal code is required!"],
-    },
-    country: {
-      type: String,
-      required: [true, "Country is required!"],
-    },
-  },
-  {
-    _id: false,
-  }
-);
+import { AdminModel, TAdmin } from "./admin.interface";
 
 // Define the admin schema
 const adminSchema = new Schema<TAdmin>(
@@ -57,7 +28,7 @@ const adminSchema = new Schema<TAdmin>(
       default: 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png'
     },
     address: {
-      type: addressSchema,
+      type: String,
       required: [true, "Address is required!"],
     },
   },

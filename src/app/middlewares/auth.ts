@@ -29,7 +29,7 @@ const authenticateUser = (req: Request, res: Response, next: NextFunction) => {
 
     // Attach user id and role to request object
     (req as any).userId = decoded.sub;
-    (req as any).userRole = decoded.role;
+    (req as any).role = decoded.role;
     next();
   } catch (error) {
     sendResponse(res, {
@@ -48,7 +48,7 @@ const authorizeAdmin = (req: Request, res: Response, next: NextFunction) => {
     config.jwt_access_secret_token as string,
   ) as JwtPayload;
 
-  if (decoded?.userRole !== "admin") {
+  if (decoded?.role !== "admin") {
     return sendResponse(res, {
       success: false,
       statusCode: httpStatus.UNAUTHORIZED,
@@ -67,7 +67,7 @@ const authorizeUser = (req: Request, res: Response, next: NextFunction) => {
     config.jwt_access_secret_token as string,
   ) as JwtPayload;
 
-  if (decoded?.userRole !== "user") {
+  if (decoded?.role !== "user") {
     return sendResponse(res, {
       success: false,
       statusCode: httpStatus.UNAUTHORIZED,
@@ -103,7 +103,7 @@ const auth = (...requiredRoles: TUserRole[]) => {
       config.jwt_access_secret_token as string,
     ) as JwtPayload;
 
-    const { userRole, userId, userEmail, iat } = decoded;
+    const { role, userId, userEmail, iat } = decoded;
 
     // checking if the user is exist
     const user = await User.isUserExistsByEmail(userEmail);
@@ -134,14 +134,14 @@ const auth = (...requiredRoles: TUserRole[]) => {
       throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized !');
     }
 
-    if (requiredRoles && !requiredRoles.includes(userRole)) {
+    if (requiredRoles && !requiredRoles.includes(role)) {
       throw new AppError(
         httpStatus.UNAUTHORIZED,
         'You are not authorized!',
       );
     }
 
-    req.user = decoded as JwtPayload & { userRole: string };
+    req.user = decoded as JwtPayload & { role: string };
     next();
   });
 };
