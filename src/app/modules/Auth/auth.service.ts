@@ -23,7 +23,7 @@ const loginUser = async (payload: TLoginUser) => {
 
   const jwtPayload = {
     userEmail: user.email,
-    userRole: user.role,
+    role: user.role,
     userId: user._id as string,
   };
 
@@ -67,21 +67,16 @@ const changePassword = async (userInfo: JwtPayload, payload: TPasswordChange) =>
   if (status === 'blocked') {
     throw new AppError(httpStatus.FORBIDDEN, 'User is blocked!');
   }
-  console.log('User not blocked')
-  console.log(oldPassword, user?.password);
 
   if (!(await User.isPasswordMatched(oldPassword, user?.password))) {
-    console.log('Password not matched')
     throw new AppError(httpStatus.FORBIDDEN, 'Password do not matched!')
   }
-
-  console.log('Password Matched');
 
   const hashedPassword = await User.hashPassword(newPassword);
 
   const result = await User.findOneAndUpdate({
     _id: userInfo.userId,
-    role: userInfo.userRole,
+    role: userInfo.role,
   },
     {
       password: hashedPassword,
@@ -133,7 +128,7 @@ const refreshToken = async (token: string) => {
 
   const jwtPayload = {
     userEmail: user.email,
-    userRole: user.role,
+    role: user.role,
     userId: user._id as string,
   };
 

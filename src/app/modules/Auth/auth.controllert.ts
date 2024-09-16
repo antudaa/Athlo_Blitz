@@ -7,8 +7,7 @@ import { AuthServices } from "./auth.service";
 import config from "../../config";
 
 const loginUser: RequestHandler = catchAsync(async (req, res) => {
-  const { body } = req.body;
-  const result = await AuthServices.loginUser(body);
+  const result = await AuthServices.loginUser(req.body);
   const { refreshToken, accessToken, user } = result;
 
   res.cookie('refreshToken', refreshToken, {
@@ -34,9 +33,8 @@ const changePassword: RequestHandler = catchAsync(async (req, res) => {
     token as string,
     config.jwt_access_secret_token as string,
   ) as JwtPayload;
-  const { body } = req.body;
 
-  const result = await AuthServices.changePassword(decoded, body);
+  const result = await AuthServices.changePassword(decoded, req.body);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
