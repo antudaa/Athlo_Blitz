@@ -2,19 +2,19 @@ import { z } from "zod";
 
 export const createBookingValidationSchema = z.object({
   body: z.object({
-    date: z.string().min(1, "Date is required!"),
-    facility: z.string().min(1, "Facility Id is required!"),
-    startTime: z.string().min(1, "Start time is required!"),
-    endTime: z.string().min(1, "End time is required!"),
+    date: z.string().trim(),
+    facility: z.string().trim(),
+    startTime: z.string().trim().min(1, "Start time is required!"),
+    endTime: z.string().trim().min(1, "End time is required!"),
   }),
 });
 
 export const updateBookingValidationSchema = z.object({
   body: z.object({
-    date: z.string(),
-    facility: z.string(),
-    startTime: z.string(),
-    endTime: z.string(),
+    date: z.string().optional(),
+    facility: z.string().optional(),
+    startTime: z.string().optional(),
+    endTime: z.string().optional(),
   }),
 });
 

@@ -1,4 +1,4 @@
-import { Model, Types } from "mongoose";
+import mongoose, { Model, Types } from "mongoose";
 
 export interface IBooking {
   facility: Types.ObjectId;
@@ -6,16 +6,14 @@ export interface IBooking {
   startTime: string;
   endTime: string;
   user?: Types.ObjectId;
+  paymentStatus: 'pending' | 'successfull' | 'failed';
+  transactionId: string;
   payableAmount?: number;
-  isBooked?: "confirmed" | "unconfirmed" | "canceled";
+  isBooked?: "confirmed" | "pending" | "canceled";
+  isDeleted: boolean;
 }
 
 export interface BookingModel extends Model<IBooking> {
-  calculatePayableAmount(
-    startTime: string,
-    endTime: string,
-    pricePerhour: number,
-  ): Promise<IBooking>;
-
-  isBookingExists(bookingInfo: IBooking): Promise<boolean>;
+  calculatePayableAmount(startTime: string, endTime: string, pricePerHour: number): number;
+  isBookingExists(bookingInfo: IBooking, session?: mongoose.ClientSession): Promise<boolean>;
 }

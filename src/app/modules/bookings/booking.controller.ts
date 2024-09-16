@@ -3,7 +3,6 @@ import catchAsync from "../../utils/catchAsync";
 import { BookingService } from "./bookings.service";
 import sendResponse from "../../utils/sendResponse";
 import httpStatus from "http-status";
-import noDataFound from "../../middlewares/noDataFound";
 import { getUserIdFromToken } from "../../middlewares/auth";
 import AppError from "../../Errors/AppError";
 
@@ -13,9 +12,8 @@ const createBooking: RequestHandler = catchAsync(async (req, res) => {
     throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized!");
   }
   const userId = getUserIdFromToken(req);
-  const { body } = req.body;
 
-  const bookingInfo = { ...body, user: userId };
+  const bookingInfo = { ...req.body, user: userId };
   const result = await BookingService.createBookingIntoDB(bookingInfo);
 
   sendResponse(res, {
@@ -32,7 +30,7 @@ const viewAllBookingsByAdmin: RequestHandler = catchAsync(async (req, res) => {
     throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized!");
   }
 
-  const result = await BookingService.viewAllBookingsByAdmin();
+  const result = await BookingService.viewAllBookingsByAdmin(req.query);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -48,13 +46,9 @@ const viewBookingsByUser: RequestHandler = catchAsync(async (req, res) => {
     throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized!");
   }
 
-  const userId = getUserIdFromToken(req);
+  const id = getUserIdFromToken(req);
+  const result = await BookingService.viewBookingsByUser(id, req.query);
 
-  const result = await BookingService.viewBookingsByUser(userId);
-
-  if (result.length === 0) {
-    return noDataFound(res);
-  }
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -63,8 +57,24 @@ const viewBookingsByUser: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
-const cancleBookingByUser: RequestHandler = catchAsync(async (req, res) => {
+const viewBookingById: RequestHandler = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const token = req.headers.authorization?.split(" ")[1];
+  if(!token){
+    throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized!");
+  }
 
+  const result = await BookingService.getBookingsById(id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Booking Data retrieved successfully.",
+    data: result,
+  });
+})
+
+const cancleBookingByUser: RequestHandler = catchAsync(async (req, res) => {
   const { id } = req.params;
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
@@ -85,5 +95,6 @@ export const BookingControllers = {
   createBooking,
   viewAllBookingsByAdmin,
   viewBookingsByUser,
+  viewBookingById,
   cancleBookingByUser,
 };

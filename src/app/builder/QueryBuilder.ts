@@ -12,7 +12,7 @@ class QueryBuilder<T> {
   search(searchableFields: string[]) {
     const searchTerm = this?.query?.searchTerm;
 
-    if (searchTerm) {
+    if (searchTerm && searchTerm) {
       const searchCondition = {
         $or: searchableFields.map(
           (field) =>
@@ -28,22 +28,32 @@ class QueryBuilder<T> {
 
   filter() {
     const queryObject = { ...this.query };
-
     const excludeFields = ["searchTerm", "sort", "limit", "page", "fields"];
 
     excludeFields.forEach((element) => delete queryObject[element]);
 
-    if (queryObject.category === "") {
-      return this;
+    Object.keys(queryObject).forEach((key) => {
+      if (!queryObject[key]) delete queryObject[key];
+    });
+
+    if (queryObject.pricePerHour) {
+      const price = Number(queryObject.pricePerHour);
+      if (!isNaN(price)) {
+        this.modelQuery = this.modelQuery.find({
+          ...queryObject,
+          pricePerHour: { $lte: price }, // Filter for facilities with pricePerHour less than or equal to the provided number
+        } as FilterQuery<T>);
+      }
+    } else {
+      this.modelQuery = this.modelQuery.find(queryObject as FilterQuery<T>);
     }
 
-    this.modelQuery = this.modelQuery.find(queryObject as FilterQuery<T>);
     return this;
   }
 
   sort() {
     let sortField =
-      (this?.query?.sort as string)?.split(",")?.join(" ") || "price";
+      (this?.query?.sort as string)?.split(",")?.join(" ") || "pricePerHour";
 
     if (sortField.includes("rating")) {
       sortField = sortField.replace("rating", "-rating");
@@ -56,7 +66,7 @@ class QueryBuilder<T> {
 
   paginate() {
     const page = Number(this?.query?.page) || 1;
-    const limit = Number(this?.query?.limit) || 10;
+    const limit = Number(this?.query?.limit);
     const skip = (page - 1) * limit;
 
     this.modelQuery = this.modelQuery.skip(skip).limit(limit);

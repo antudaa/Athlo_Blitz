@@ -19,7 +19,7 @@ router.post(
 );
 
 router.get(
-  "/",
+  "/admin",
   authenticateUser,
   authorizeAdmin,
   BookingControllers.viewAllBookingsByAdmin,
@@ -32,7 +32,13 @@ router.get(
   BookingControllers.viewBookingsByUser,
 );
 
-router.delete(
+router.get(
+  "/details/:id",
+  authenticateUser,
+  BookingControllers.viewBookingById,
+);
+
+router.patch(
     "/:id",
     authenticateUser,
     authorizeUser,
