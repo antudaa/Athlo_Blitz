@@ -31,7 +31,7 @@ const createClient: RequestHandler = catchAsync(async (req, res) => {
 })
 
 const getAllUsers: RequestHandler = catchAsync(async (req, res) => {
-  const result = await UserService.getAllUserFromDB();
+  const result = await UserService.getAllUserFromDB(req.query);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -41,8 +41,35 @@ const getAllUsers: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getUserFullData: RequestHandler = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await UserService.getUserWithFullData(id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Users data retrieved successfully.",
+    data: result,
+  });
+});
+
+const blockUserBySuperAdmin: RequestHandler = catchAsync(async (req, res) => {
+  const { id } = req.params;
+
+  const result = await UserService.blockUserBySuperAdmin(id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User has been blocked successfully.",
+    data: result,
+  });
+});
+
 export const UserControllers = {
   createAdmin,
   createClient,
   getAllUsers,
+  getUserFullData,
+  blockUserBySuperAdmin,
 };

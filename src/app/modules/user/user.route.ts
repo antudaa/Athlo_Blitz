@@ -10,4 +10,15 @@ router.get('/',
   UserControllers.getAllUsers
 );
 
+router.get('/get-user/:id',
+  // authenticateUser,
+  UserControllers.getUserFullData,
+);
+
+router.patch('/block/:id',
+  authenticateUser,
+  authorizeAdmin,
+  UserControllers.blockUserBySuperAdmin,
+);
+
 export const UserRoutes = router;
