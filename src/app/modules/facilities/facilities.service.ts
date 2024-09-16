@@ -12,7 +12,6 @@ const createFacilityIntoDB = async (payload: TFacility) => {
 };
 
 const updateFacility = async (id: string, payload: Partial<TFacility>) => {
-  console.log(payload)
   const result = await Facility.findByIdAndUpdate(id, payload, { new: true });
   return result;
 };
@@ -27,7 +26,7 @@ const deleteFacilityFromDB = async (id: string) => {
 };
 
 const getAllFacilityFromDB = async (query: Record<string, unknown>) => {
-  const facilityQuery = new QueryBuilder(Facility.find(), query)
+  const facilityQuery = new QueryBuilder(Facility.find({ isDeleted: false }), query) // Filter out deleted facilities here
     .search(facilitySearchableFields)
     .filter()
     .sort()

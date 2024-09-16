@@ -4,15 +4,14 @@ import { FacilityService } from "./facilities.service";
 import sendResponse from "../../utils/sendResponse";
 import httpStatus from "http-status";
 import AppError from "../../Errors/AppError";
-import mongoose, { ObjectId, Types } from "mongoose";
+import mongoose from "mongoose";
 
 const createFacility: RequestHandler = catchAsync(async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
-  const { body } = req.body;
   if (!token) {
     throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized!");
   }
-  const result = await FacilityService.createFacilityIntoDB(body);
+  const result = await FacilityService.createFacilityIntoDB(req.body);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -26,12 +25,11 @@ const updateFacility: RequestHandler = catchAsync(async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
 
   const { id } = req.params;
-  const { body } = req.body;
 
   if (!token) {
     throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized!");
   }
-  const result = await FacilityService.updateFacility(id, body);
+  const result = await FacilityService.updateFacility(id, req.body);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
