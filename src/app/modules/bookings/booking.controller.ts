@@ -7,6 +7,7 @@ import { getUserIdFromToken } from "../../middlewares/auth";
 import AppError from "../../Errors/AppError";
 
 const createBooking: RequestHandler = catchAsync(async (req, res) => {
+  console.log(req.body);
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
     throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized!");

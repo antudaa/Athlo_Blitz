@@ -10,7 +10,7 @@ router.post(
   "/",
   authenticateUser,
   authorizeAdmin,
-  requestValidator(facilityValidation.createFacilityValidationSchema),
+  // requestValidator(facilityValidation.createFacilityValidationSchema),
   FacilityControllers.createFacility,
 );
 

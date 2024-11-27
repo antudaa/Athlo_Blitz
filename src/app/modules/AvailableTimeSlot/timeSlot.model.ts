@@ -27,113 +27,125 @@ const timeSlotSchema = new Schema<ITimeSlot, TimeSlotModel>({
 timeSlotSchema.statics.isTimeSlotAvailable = async function (
   bookedTimeSlots: IBooking[],
   facilityId: Types.ObjectId,
-  date: string,
-): Promise<IBooking[]> {
-  const availableSlots: IBooking[] = [];
+  date: string
+): Promise<{ oneHourSlots: IBooking[]; twoHourSlots: IBooking[] }> {
+  const oneHourSlots: IBooking[] = [];
+  const twoHourSlots: IBooking[] = [];
 
   // Define the start and end of the day
   const dayStart = new Date("1970-01-01T00:00:00Z");
   const dayEnd = new Date("1970-01-01T23:59:59Z");
 
-  // Convert booked time slots to Date objects for proper comparison and include canceled slots as available
-  const formattedBookedSlots = bookedTimeSlots
-    .map((slot) => ({
-      start: new Date(`1970-01-01T${slot.startTime}:00Z`),
-      end: new Date(`1970-01-01T${slot.endTime}:00Z`),
-      isBooked: slot.isBooked,
-    }));
-
-  // Sort booked slots by start time
-  formattedBookedSlots.sort((a, b) => a.start.getTime() - b.start.getTime());
-
   // Utility function to format time with AM/PM
   const formatTimeWithAmPm = (date: Date) => {
     let hours = date.getUTCHours();
     const minutes = date.getUTCMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const ampm = hours >= 12 ? "PM" : "AM";
     hours = hours % 12;
     hours = hours ? hours : 12; // Hour '0' should be '12'
     const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
     return `${hours}:${minutesStr} ${ampm}`;
   };
 
-  // If no bookings exist for the day or if all bookings are canceled, create two default time slots
-  if (formattedBookedSlots.length === 0 || formattedBookedSlots.every(slot => slot.isBooked === "canceled")) {
-    return [
-      {
-        facility: facilityId,
-        date: date,
-        startTime: formatTimeWithAmPm(dayStart),
-        endTime: formatTimeWithAmPm(new Date(dayStart.getTime() + 12 * 60 * 60 * 1000)),
-        paymentStatus: 'pending',
-        transactionId: '',
-        isBooked: "pending", // Default to pending for new slots
-        isDeleted: false,
-      },
-      {
-        facility: facilityId,
-        date: date,
-        startTime: formatTimeWithAmPm(new Date(dayStart.getTime() + 12 * 60 * 60 * 1000)),
-        endTime: formatTimeWithAmPm(dayEnd),
-        paymentStatus: 'pending',
-        transactionId: '',
-        isBooked: "pending", // Default to pending for new slots
-        isDeleted: false,
-      },
-    ];
-  }
+  // Generate all 1-hour and 2-hour slots for the entire day
+  const allOneHourSlots: IBooking[] = [];
+  const allTwoHourSlots: IBooking[] = [];
 
-  let previousEnd = dayStart;
-
-  for (const booked of formattedBookedSlots) {
-    // If the previous end time is less than the current booking start, there is an available slot
-    if (previousEnd < booked.start) {
-      availableSlots.push({
-        facility: facilityId,
-        date: date,
-        startTime: formatTimeWithAmPm(previousEnd),
-        endTime: formatTimeWithAmPm(booked.start),
-        paymentStatus: 'pending',
-        transactionId: '',
-        isBooked: "pending", // Mark the slot as available
-        isDeleted: false,
-      });
-    }
-
-    // If this booking is canceled, consider it as available time
-    if (booked.isBooked === "canceled") {
-      availableSlots.push({
-        facility: facilityId,
-        date: date,
-        startTime: formatTimeWithAmPm(booked.start),
-        endTime: formatTimeWithAmPm(booked.end),
-        paymentStatus: 'pending',
-        transactionId: '',
-        isBooked: "pending", // Mark the slot as available
-        isDeleted: false,
-      });
-    }
-
-    // Move the previous end to the end of the current slot
-    previousEnd = booked.end > previousEnd ? booked.end : previousEnd;
-  }
-
-  // If there is still time remaining after the last booking, add it as an available slot
-  if (previousEnd < dayEnd) {
-    availableSlots.push({
+  for (let hour = 0; hour < 24; hour++) {
+    // Create 1-hour slots
+    const start1Hour = new Date(dayStart.getTime() + hour * 60 * 60 * 1000);
+    const end1Hour = new Date(start1Hour.getTime() + 60 * 60 * 1000);
+    allOneHourSlots.push({
       facility: facilityId,
       date: date,
-      startTime: formatTimeWithAmPm(previousEnd),
-      endTime: formatTimeWithAmPm(dayEnd),
-      paymentStatus: 'pending',
-      transactionId: '',
-      isBooked: "pending", // Mark the slot as available
+      startTime: formatTimeWithAmPm(start1Hour),
+      endTime: formatTimeWithAmPm(end1Hour),
+      paymentStatus: "pending",
+      transactionId: "",
+      isBooked: "pending",
       isDeleted: false,
     });
+
+    // Create 2-hour slots
+    const start2Hour = new Date(dayStart.getTime() + hour * 60 * 60 * 1000);
+    const end2Hour = new Date(start2Hour.getTime() + 2 * 60 * 60 * 1000);
+    if (end2Hour.getTime() <= dayEnd.getTime()) {
+      allTwoHourSlots.push({
+        facility: facilityId,
+        date: date,
+        startTime: formatTimeWithAmPm(start2Hour),
+        endTime: formatTimeWithAmPm(end2Hour),
+        paymentStatus: "pending",
+        transactionId: "",
+        isBooked: "pending",
+        isDeleted: false,
+      });
+    }
   }
 
-  return availableSlots;
+  // Convert booked time slots into Date objects for comparison
+  const formattedBookedSlots = bookedTimeSlots.map((slot) => ({
+    start: new Date(`1970-01-01T${slot.startTime.split(" ")[0]}:00Z`),
+    end: new Date(`1970-01-01T${slot.endTime.split(" ")[0]}:00Z`),
+    isBooked: slot.isBooked,
+  }));
+
+  // Filter 1-hour slots to exclude overlapping slots
+  for (const slot of allOneHourSlots) {
+    const slotStart = new Date(`1970-01-01T${slot.startTime.split(" ")[0]}:00Z`);
+    const slotEnd = new Date(`1970-01-01T${slot.endTime.split(" ")[0]}:00Z`);
+
+    let isAvailable = true;
+
+    for (const booked of formattedBookedSlots) {
+      // Check if the slot overlaps with a booked slot and is not canceled
+      if (
+        booked.isBooked !== "canceled" &&
+        ((slotStart >= booked.start && slotStart < booked.end) || // Slot start overlaps
+          (slotEnd > booked.start && slotEnd <= booked.end) || // Slot end overlaps
+          (slotStart <= booked.start && slotEnd >= booked.end)) // Slot fully covers a booked slot
+      ) {
+        isAvailable = false;
+        break;
+      }
+    }
+
+    // Add the slot to oneHourSlots if it is available
+    if (isAvailable) {
+      oneHourSlots.push(slot);
+    }
+  }
+
+  // Filter 2-hour slots to exclude overlapping slots
+  for (const slot of allTwoHourSlots) {
+    const slotStart = new Date(`1970-01-01T${slot.startTime.split(" ")[0]}:00Z`);
+    const slotEnd = new Date(`1970-01-01T${slot.endTime.split(" ")[0]}:00Z`);
+
+    let isAvailable = true;
+
+    for (const booked of formattedBookedSlots) {
+      // Check if the slot overlaps with a booked slot and is not canceled
+      if (
+        booked.isBooked !== "canceled" &&
+        ((slotStart >= booked.start && slotStart < booked.end) || // Slot start overlaps
+          (slotEnd > booked.start && slotEnd <= booked.end) || // Slot end overlaps
+          (slotStart <= booked.start && slotEnd >= booked.end)) // Slot fully covers a booked slot
+      ) {
+        isAvailable = false;
+        break;
+      }
+    }
+
+    // Add the slot to twoHourSlots if it is available
+    if (isAvailable) {
+      twoHourSlots.push(slot);
+    }
+  }
+
+  // Return both 1-hour and 2-hour slots
+  return { oneHourSlots, twoHourSlots };
 };
+
 
 
 

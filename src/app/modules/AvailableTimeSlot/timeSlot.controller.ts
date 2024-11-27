@@ -4,6 +4,7 @@ import sendResponse from "../../utils/sendResponse";
 import { TimeSlotService } from "./timeSlot.service";
 
 const getAvailableTimeSlot = catchAsync(async (req, res) => {
+  console.log(req.query);
   const result = await TimeSlotService.getAvailableTimeSlot(req.query);
 
   sendResponse(res, {

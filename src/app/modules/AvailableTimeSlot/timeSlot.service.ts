@@ -3,6 +3,7 @@ import { Booking } from "../bookings/bookings.model";
 import { TimeSlot } from "./timeSlot.model";
 
 const getAvailableTimeSlot = async (query: Record<string, unknown>) => {
+  console.log(query);
   const checkAvailabilityQuery = new QueryBuilder(Booking.find(), query)
     .filter()
 
@@ -19,3 +20,4 @@ const getAvailableTimeSlot = async (query: Record<string, unknown>) => {
 export const TimeSlotService = {
   getAvailableTimeSlot,
 };
+ 

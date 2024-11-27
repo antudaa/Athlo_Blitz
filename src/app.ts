@@ -13,7 +13,8 @@ app.use(express.json());
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://api.imgbb.com/1/upload'
+    'https://api.imgbb.com/1/upload',
+    'https://athloblitz.vercel.app',
   ],
   credentials: true,
   methods: [

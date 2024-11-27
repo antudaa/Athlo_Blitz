@@ -1,6 +1,7 @@
 import mongoose, { Schema, model } from "mongoose";
 import { BookingModel, IBooking } from "./bookings.interface";
 import { Facility } from "../facilities/facilities.model";
+import dayjs from 'dayjs';
 import AppError from "../../Errors/AppError";
 
 const bookingSchema = new Schema<IBooking, BookingModel>(
@@ -101,12 +102,15 @@ bookingSchema.statics.calculatePayableAmount = function (
   endTime: string,
   pricePerHour: number
 ): number {
-  const start = new Date(`1970-01-01T${startTime}:00Z`);
-  const end = new Date(`1970-01-01T${endTime}:00Z`);
-  const durationInMilliseconds = end.getTime() - start.getTime();
-  const durationInHours = durationInMilliseconds / (1000 * 60 * 60);
 
-  return durationInHours * pricePerHour;
+  const start = dayjs(`1970-01-01 ${startTime}`, 'YYYY-MM-DD hh:mm A');
+    const end = dayjs(`1970-01-01 ${endTime}`, 'YYYY-MM-DD hh:mm A');
+
+    // Calculate the duration in hours
+    const durationInHours = end.diff(start, 'hour', true);
+
+    // Return the payable amount
+    return durationInHours * pricePerHour;
 };
 
 export const Booking = model<IBooking, BookingModel>("Booking", bookingSchema);
